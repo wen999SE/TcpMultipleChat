@@ -8,3 +8,5 @@ SOURCES += main.c \
 
 HEADERS += \
     connectserver.h
+LIBS += \
+ -lpthread

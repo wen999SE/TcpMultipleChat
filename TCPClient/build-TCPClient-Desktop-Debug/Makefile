@@ -38,7 +38,7 @@ DISTNAME      = TCPClient1.0.0
 DISTDIR = /mnt/hgfs/C/TcpMultipleChat/TCPClient/build-TCPClient-Desktop-Debug/.tmp/TCPClient1.0.0
 LINK          = g++
 LFLAGS        = 
-LIBS          = $(SUBLIBS)  
+LIBS          = $(SUBLIBS) -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -317,10 +317,10 @@ compiler_clean:
 
 ####### Compile
 
-main.o: ../TCPClient/main.c 
+main.o: ../TCPClient/main.c ../TCPClient/connectserver.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o main.o ../TCPClient/main.c
 
-connectserver.o: ../TCPClient/connectserver.c 
+connectserver.o: ../TCPClient/connectserver.c ../TCPClient/connectserver.h
 	$(CC) -c $(CFLAGS) $(INCPATH) -o connectserver.o ../TCPClient/connectserver.c
 
 ####### Install

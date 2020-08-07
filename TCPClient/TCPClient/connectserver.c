@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+
+
+pthread_mutex_t m;
 
 int ConnectServer(char* ip ,char* port)
 {
@@ -36,4 +41,31 @@ int ConnectServer(char* ip ,char* port)
 
 
     return sockfd;
+}
+void *chat_recv_process(void *arg)
+{
+    int read_return = 0;
+    char chat_recv_buf[100];
+
+    while(1)
+    {
+        memset(chat_recv_buf, 0, sizeof(char)*100);
+        read_return = read( (int)arg , chat_recv_buf, 100);
+
+        if(read_return > 0)
+        {
+            pthread_mutex_lock(&m);
+            printf("\n\n%s", chat_recv_buf);
+            printf("请输入发送的消息:");
+            fflush(stdout);
+            pthread_mutex_unlock(&m);
+        }
+        else
+        {
+            printf("%d\r\n",read_return);
+            pthread_exit("error");
+           // perror("error:");
+        }
+
+    }
 }
