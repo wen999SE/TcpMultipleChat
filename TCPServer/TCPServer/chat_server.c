@@ -12,6 +12,8 @@
 struct user *user_head;
 struct list_head *temp_pos;//临时变量 temp variate
 struct user *temp_p;//临时变量 temp variate
+struct user *temp_user_n;//临时变量 temp variate
+struct list_head *temp_n;
 #endif
 
 int Chat_Server_init(char *Server_ip, char *Server_port, int recv_max)
@@ -141,9 +143,11 @@ int chat_recv_process(int socket_fd)
         //chat_server show message to screen
         printf("[%s:%hu]上线了\n", inet_ntoa(newone->addr_in.sin_addr), ntohs(newone->addr_in.sin_port));
     }
+
+
     //b.judge whether there is user send massage
     //and judge if someuser had offline
-    struct list_head *temp_n;
+
     list_for_each_safe(temp_pos, temp_n, &user_head->list)
     {
         temp_p = list_entry(temp_pos, struct user, list);
@@ -197,4 +201,31 @@ int broadcastMsg(struct user *user_send, char *chat_buf)
     }
     return 0;
 
+}
+
+
+void destroy_user_list(void)
+{
+    int destroy_user_count = 0;
+    list_for_each_entry_safe(temp_p, temp_user_n, &user_head->list,list)
+    {
+        //剔除节点
+        //remove node
+        close(temp_p->connfd);
+        destroy_user_count ++;
+        printf("第%d个连接:%d 已关闭\n", destroy_user_count, temp_p->connfd);
+
+        list_del(&temp_p->list);
+
+        free(temp_p);
+    }
+}
+void show_user_list(void)
+{
+    int show_user_count = 0;
+    list_for_each_entry_safe(temp_p, temp_user_n, &user_head->list,list)
+    {
+
+        printf("第%d个连接:%d\n", show_user_count, temp_p->connfd);
+    }
 }

@@ -7,9 +7,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <signal.h>
 
 
 pthread_mutex_t m;
+
+int ConnectServer_sockfd =0;
 
 int ConnectServer(char* ip ,char* port)
 {
@@ -42,10 +45,17 @@ int ConnectServer(char* ip ,char* port)
 
     return sockfd;
 }
-void *chat_recv_process(void *arg)
+void chat_recv_pthread_exit(int sig __attribute__ ((unused)) )
+{
+    printf("退出线程:chat_recv_pthread_exit\n");
+    pthread_exit("ctrl+c");
+
+}
+void *chat_recv_pthread(void *arg)
 {
     int read_return = 0;
     char chat_recv_buf[100];
+    signal(SIGKILL, chat_recv_pthread_exit);
 
     while(1)
     {
@@ -63,7 +73,9 @@ void *chat_recv_process(void *arg)
         else
         {
             printf("%d\r\n",read_return);
-            pthread_exit("error");
+            close(ConnectServer_sockfd);
+            printf("服务器关闭,关闭套接字,退出程序\n");
+            exit(0);
            // perror("error:");
         }
 

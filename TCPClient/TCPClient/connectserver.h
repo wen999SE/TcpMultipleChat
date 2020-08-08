@@ -2,9 +2,9 @@
 #define CONNECTSERVER_H
 #include <pthread.h>
 extern pthread_mutex_t m;
-
+extern int ConnectServer_sockfd;
 
 int ConnectServer(char* ip ,char* port);
-void *chat_recv_process(void *arg);
+void *chat_recv_pthread(void *arg);
 
 #endif // CONNECTSERVER_H

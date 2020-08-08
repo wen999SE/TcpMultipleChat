@@ -20,11 +20,15 @@ struct user
 
 extern struct user *user_head;
 
-
+//chat_server
 int Chat_Server_init(char *Server_ip ,char *Server_port, int recv_max);
 int chat_recv_process(int socket_fd);
 int chat_welcome(struct user *newone);
 int broadcastMsg(struct user *user_send, char *chat_buf);
 
-struct user * init_list();
+//user_list
+void destroy_user_list(void);
+void show_user_list(void);
+
+
 #endif // CHAT_SERVER_H
