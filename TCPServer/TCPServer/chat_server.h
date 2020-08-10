@@ -25,6 +25,7 @@ int Chat_Server_init(char *Server_ip ,char *Server_port, int recv_max);
 int chat_recv_process(int socket_fd);
 int chat_welcome(struct user *newone);
 int broadcastMsg(struct user *user_send, char *chat_buf);
+int private_chat(struct user *private_send_user, int private_recv_user_ID ,char *chat_private_buf);
 
 //user_list
 void destroy_user_list(void);

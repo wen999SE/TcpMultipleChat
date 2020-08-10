@@ -6,5 +6,6 @@ extern int ConnectServer_sockfd;
 
 int ConnectServer(char* ip ,char* port);
 void *chat_recv_pthread(void *arg);
+void chat_recv_pthread_cleanup(void *arg);
 
 #endif // CONNECTSERVER_H
