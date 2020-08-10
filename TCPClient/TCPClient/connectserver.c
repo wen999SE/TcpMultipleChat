@@ -87,7 +87,6 @@ void *chat_recv_pthread(void *arg)
 
     }
 
-    //shutdown(ConnectServer_sockfd, 1);
     close(ConnectServer_sockfd);
     pthread_mutex_lock(&m);
     printf("服务器关闭,关闭套接字,退出程序\n");
