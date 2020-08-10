@@ -66,6 +66,7 @@ void *chat_recv_pthread(void *arg)
 
     pthread_cleanup_push(chat_recv_pthread_cleanup, NULL);
 
+	
     while(1)
     {
         memset(chat_recv_buf, 0, sizeof(char)*100);
