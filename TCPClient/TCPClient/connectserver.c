@@ -45,32 +45,22 @@ int ConnectServer(char* ip ,char* port)
 
     return sockfd;
 }
-void chat_recv_pthread_cleanup(void *arg)
+void chat_recv_pthread_exit(int sig __attribute__ ((unused)) )
 {
-    pthread_mutex_unlock(&m);
-
-    //shutdown(ConnectServer_sockfd, 1);
-    close(ConnectServer_sockfd);
-
     printf("退出线程:chat_recv_pthread_exit\n");
+    pthread_exit("ctrl+c");
 
 }
 void *chat_recv_pthread(void *arg)
 {
     int read_return = 0;
     char chat_recv_buf[100];
+    signal(SIGKILL, chat_recv_pthread_exit);
 
-    //收到cancel信号是异步退出线程
-    //when get signal - cancel, then exit pthread-chat_recv_pthread asynchronous
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
-
-    pthread_cleanup_push(chat_recv_pthread_cleanup, NULL);
-
-	
     while(1)
     {
         memset(chat_recv_buf, 0, sizeof(char)*100);
-        read_return = read(*( (int *)arg ) , chat_recv_buf, 100);
+        read_return = read( (int)arg , chat_recv_buf, 100);
 
         if(read_return > 0)
         {
@@ -83,15 +73,11 @@ void *chat_recv_pthread(void *arg)
         else
         {
             printf("%d\r\n",read_return);
-            break;
+            close(ConnectServer_sockfd);
+            printf("服务器关闭,关闭套接字,退出程序\n");
+            exit(0);
+           // perror("error:");
         }
 
     }
-
-    close(ConnectServer_sockfd);
-    pthread_mutex_lock(&m);
-    printf("服务器关闭,关闭套接字,退出程序\n");
-    pthread_mutex_unlock(&m);
-    pthread_cleanup_pop(0);
-    exit(0);
 }

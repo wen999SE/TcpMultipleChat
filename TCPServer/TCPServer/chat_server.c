@@ -160,40 +160,18 @@ int chat_recv_process(int socket_fd)
             read_return = 0;
             memset(chat_buf, 0, sizeof(char)*100);
             read_return = read(temp_p->connfd, chat_buf, 100);
-            printf("[%s:%d]rset\r\n",  __FUNCTION__, __LINE__);
+
             //a.收到消息 receive massage
             if (read_return > 0)
             {
-                printf("[%s:%d]> 0\r\n",  __FUNCTION__, __LINE__);
-                //信号帧格式  :[ID] [chat_buf]
-                //提取信号帧 ":"
-                //signal frame format :[ID] [chat_buf]
-                //get signal flag ":"
-                char *private_strstr = strstr(chat_buf, ":");
-
-                if (private_strstr == NULL)//群发
-                {
-                    //群发消息
-                    broadcastMsg(temp_p, chat_buf);
-                    printf("已广播用户%d发来消息:%s",temp_p->ID, chat_buf);
-                }
-                else//私聊
-                {
-                    printf("[%s:%d]\r\n",  __FUNCTION__, __LINE__);
-                    printf("%d\n", atoi(private_strstr+1) );
-                    printf("%s\n", private_strstr );
-                    printf("%s\n", private_strstr+1 );
-                    private_chat(temp_p, atoi(private_strstr+1), private_strstr+3);
-                }
-
+                //群发消息
+                broadcastMsg(temp_p, chat_buf);
+                printf("已广播用户%d发来消息:%s",temp_p->ID, chat_buf);
             }
             //b.没收到消息,有人下线了 get none massage, someone had offline
             if (read_return == 0)
             {
-                printf("[%s:%d]== 0\r\n",  __FUNCTION__, __LINE__);
                 printf("用户%d:下线了!\n", temp_p->ID);
-
-
                 close(temp_p->connfd);
                 list_del(&temp_p->list);
                 free(temp_p);
@@ -225,36 +203,7 @@ int broadcastMsg(struct user *user_send, char *chat_buf)
 
 }
 
-int private_chat(struct user *private_send_user, int private_recv_user_ID ,char *chat_private_buf)
-{
-    char get_recv_user_ID_flag = 0;
-    char notice_buf[50];
-    list_for_each_entry_safe(temp_p, temp_user_n, &user_head->list, list)
-    {
-        //ID匹配
-        //matched ID
-        if ( temp_p->ID == private_recv_user_ID )
-        {
-            get_recv_user_ID_flag = 1;
 
-            memset(notice_buf, 0, sizeof(char)*50 );
-            snprintf(notice_buf, 50, "用户%d发来私聊消息:%s\n", private_send_user->ID,chat_private_buf);
-            write(temp_p->connfd, notice_buf, strlen(notice_buf) );
-        }
-    }
-    //没有找到ID
-    //can't matched recv_ID
-    if (get_recv_user_ID_flag == 0)
-    {
-        memset(notice_buf, 0, sizeof(char)*50 );
-        snprintf(notice_buf, 50,"用户ID:%d不存在,私聊失败\n",private_recv_user_ID);
-        send(private_send_user->connfd, notice_buf, strlen(notice_buf), MSG_OOB);
-        //write(private_send_user->connfd, notice_buf, strlen(notice_buf) );
-    }
-    return 0;
-}
-
-//链表操作 link list functions
 void destroy_user_list(void)
 {
     int destroy_user_count = 0;
