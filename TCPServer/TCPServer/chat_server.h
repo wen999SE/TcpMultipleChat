@@ -26,6 +26,7 @@ int chat_recv_process(int socket_fd);
 int chat_welcome(struct user *newone);
 int broadcastMsg(struct user *user_send, char *chat_buf);
 int private_chat(struct user *private_send_user, int private_recv_user_ID ,char *chat_private_buf);
+int private_recv_file(struct user *private_send, char *filename);
 
 //user_list
 void destroy_user_list(void);

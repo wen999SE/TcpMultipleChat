@@ -1,4 +1,3 @@
-#include "connectserver.h"
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -8,7 +7,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
-
+#include "connectserver.h"
 
 pthread_mutex_t m;
 

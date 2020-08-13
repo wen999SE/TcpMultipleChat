@@ -6,6 +6,9 @@
 #include <string.h>
 #include <pthread.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 
 
@@ -85,6 +88,63 @@ int main(int argc, char** argv)
         printf("\n请输入发送的消息:");
         pthread_mutex_unlock(&m);
         if ( fgets(chat_send_buf, 100, stdin) == NULL )break;
+
+        
+        if ( strstr(chat_send_buf, "+") != NULL)//上传文件
+        {
+            long private_file_length = 0;
+            char chat_temp_buf[1024], private_filename[50];
+            FILE *fp;
+
+            printf("[%s:%d]上传文件\r\n",  __FUNCTION__, __LINE__);
+                
+            //提取文件名和ID  
+            //fetch ID of file  
+            sscanf(chat_send_buf,"+ %s", private_filename);
+            errno = 0;
+            //提取文件长度
+            //fetch ID of file  
+            struct stat private_filename_info;
+            stat(private_filename , &private_filename_info);
+            if (errno == ENOENT) 
+            {
+                perror("文件不存在!");
+                continue;
+            }
+            private_file_length = private_filename_info.st_size;
+
+            memset(chat_temp_buf, 0, sizeof(char)*1024 );
+            snprintf(chat_temp_buf, 1024,"+%ld %s", private_file_length, private_filename);
+
+            //发送传输文件命令给服务器
+            //send translate file command to server 
+            write_return = write(ConnectServer_sockfd, chat_temp_buf, strlen(chat_temp_buf));
+            
+
+            int file_temp_length = 0;
+            int file_temp_total = 0;
+            fp = fopen(private_filename, "r");
+            rewind(fp);
+            if ( fp == NULL)
+            {
+                perror("faild to open!");
+                continue;
+            }
+            while ( private_file_length > 0 )
+            {
+                memset(chat_temp_buf, 0, sizeof(char)*1024 );
+                file_temp_length = fread(chat_temp_buf, 1, 1024, fp);
+                file_temp_length = write(ConnectServer_sockfd, chat_temp_buf, file_temp_length );
+                private_file_length -= file_temp_length;
+                file_temp_total += file_temp_length;
+                printf("已经传输了%d[字节]\r\n", file_temp_total);
+            }
+            fclose(fp);
+            printf("发送完成!\n");
+            
+            continue;
+        }
+        //正常发送消息
         write_return = write(ConnectServer_sockfd, chat_send_buf, strlen(chat_send_buf));
     }
 

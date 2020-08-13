@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "pthread.h": "c",
+        "string.h": "c",
+        "stat.h": "c",
+        "cerrno": "c",
+        "string": "cpp",
+        "xlocnum": "cpp",
+        "thread": "cpp"
+    }
+}

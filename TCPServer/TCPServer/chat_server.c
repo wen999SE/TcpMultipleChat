@@ -7,6 +7,8 @@
 #include "../../kernel_list.h"
 #include <sys/types.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
 
 #ifdef ENABLE_CHAT
 struct user *user_head;
@@ -15,6 +17,7 @@ struct user *temp_p;//临时变量 temp variate
 struct user *temp_user_n;//临时变量 temp variate
 struct list_head *temp_n;
 #endif
+
 
 int Chat_Server_init(char *Server_ip, char *Server_port, int recv_max)
 {
@@ -85,8 +88,8 @@ fd_set rset;//read ready socket flag
 fd_set wset;//write ready socket flag
 fd_set eset;//error ready socket flag
 int ID = 1;
-
-
+char priavate_file_flag = 0;
+long private_recv_length = 0;
 
 int chat_recv_process(int socket_fd)
 {
@@ -157,49 +160,70 @@ int chat_recv_process(int socket_fd)
         if ( FD_ISSET(temp_p->connfd, &rset) )//rset状态有变化 rset state had been changed
         {
 
+            char private_filename[50];
             read_return = 0;
+            char *private_strstr;
             memset(chat_buf, 0, sizeof(char)*100);
-            read_return = read(temp_p->connfd, chat_buf, 100);
-            printf("[%s:%d]rset\r\n",  __FUNCTION__, __LINE__);
-            //a.收到消息 receive massage
-            if (read_return > 0)
+
+            if (priavate_file_flag == 0)
             {
-                printf("[%s:%d]> 0\r\n",  __FUNCTION__, __LINE__);
+                read_return = read(temp_p->connfd, chat_buf, 100);
+                //a.收到消息 receive massage
+                if (read_return > 0)
+                {
+                    //处理接收文件命令
+                    //process receive file command
+                    private_strstr = strstr(chat_buf, "+");
+                    
+                    
+                    if (private_strstr != NULL)
+                    {
+                        sscanf(private_strstr,"+%ld %s",  &private_recv_length, private_filename);
+                        priavate_file_flag = 1;
+                        printf("\n开始接收文件%s\n", private_filename);       
+                                            
+                    }
+                    
+                }
+                //b.没收到消息,有人下线了 get none massage, someone had offline
+                if (read_return == 0)
+                {
+                
+                    printf("用户%d:下线了!\n", temp_p->ID);
+
+                    close(temp_p->connfd);
+                    list_del(&temp_p->list);
+                    free(temp_p);
+                }
+
                 //信号帧格式  :[ID] [chat_buf]
                 //提取信号帧 ":"
                 //signal frame format :[ID] [chat_buf]
                 //get signal flag ":"
-                char *private_strstr = strstr(chat_buf, ":");
+                private_strstr = strstr(chat_buf, ":");
 
                 if (private_strstr == NULL)//群发
                 {
-                    //群发消息
+                    if (priavate_file_flag == 0)
+                    {
+                        //群发消息
                     broadcastMsg(temp_p, chat_buf);
-                    printf("已广播用户%d发来消息:%s",temp_p->ID, chat_buf);
+                    printf("已广播用户%d发来消息:%s\n",temp_p->ID, chat_buf);
+
+                    }
+                    
                 }
                 else//私聊
-                {
-                    printf("[%s:%d]\r\n",  __FUNCTION__, __LINE__);
-                    printf("%d\n", atoi(private_strstr+1) );
-                    printf("%s\n", private_strstr );
-                    printf("%s\n", private_strstr+1 );
+                {                   
                     private_chat(temp_p, atoi(private_strstr+1), private_strstr+3);
-                }
+                }    
 
             }
-            //b.没收到消息,有人下线了 get none massage, someone had offline
-            if (read_return == 0)
+            //开始接收文件
+            if (priavate_file_flag == 1)
             {
-                printf("[%s:%d]== 0\r\n",  __FUNCTION__, __LINE__);
-                printf("用户%d:下线了!\n", temp_p->ID);
-
-
-                close(temp_p->connfd);
-                list_del(&temp_p->list);
-                free(temp_p);
+                private_recv_file(temp_p, private_filename);
             }
-
-
         }
 
 
@@ -216,7 +240,7 @@ int broadcastMsg(struct user *user_send, char *chat_buf)
         if (temp_p->ID != user_send->ID)
         {
             memset(chat_temp_buf, 0, sizeof(char)*100);
-            snprintf(chat_temp_buf, 100,"用户%d发来消息:%s",user_send->ID, chat_buf);
+            snprintf(chat_temp_buf, 100,"用户%d发来消息:%s\n",user_send->ID, chat_buf);
             write(temp_p->connfd, chat_temp_buf, strlen(chat_temp_buf));
         }
 
@@ -253,6 +277,63 @@ int private_chat(struct user *private_send_user, int private_recv_user_ID ,char 
     }
     return 0;
 }
+
+int private_recv_file(struct user *private_send,  char *filename)
+{
+    FILE *fp = NULL;
+    char private_buf[1040];
+    int revc_temp_length = 0;
+    int private_total = 0;
+    int private_file_begin = 0;
+
+    //类似于断点续传
+    //just like translate from break
+    if ( access(filename, F_OK) )//不存在文件
+    {
+        fp = fopen(filename, "w");
+    }
+    else//存在文件
+    {
+        struct stat private_file_info;
+        memset(&private_file_info, 0, sizeof(struct stat) );
+        stat(filename, &private_file_info);
+        
+        private_file_begin = private_file_info.st_size;
+        fp = fopen(filename, "a");
+    }
+    if ( fp == NULL)
+    {
+        perror("open fp failed!");
+        return -1;
+    }
+
+    private_total += private_file_begin;
+
+    if ( private_recv_length > 0 )
+    {
+        memset(private_buf, 0, sizeof(char)*1024 );
+        revc_temp_length = read(private_send->connfd, private_buf, 1024);
+
+        fwrite(private_buf, revc_temp_length, 1, fp);
+        
+        private_recv_length -= revc_temp_length;
+        private_total += revc_temp_length;
+
+        printf("已经下载: %d[字节]\r", private_total);
+        
+        if ( private_recv_length == 0 )
+        {
+            priavate_file_flag = 0;
+            printf("\n接收完成!\n");
+        }
+        
+    }
+    fclose(fp);
+    
+    return 0;
+    
+}
+
 
 //链表操作 link list functions
 void destroy_user_list(void)
