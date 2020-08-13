@@ -1,37 +1,51 @@
 # TcpMultipleChat
-Background
+# Background
 Multi person chat and file transfer based on TCP protocol
 
-Feature
+
+[![show](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
+
+
+# Feature
+## Client:
 1.multi-chat
 2.login reminded, logout reminded
 3.private-chat
 4.transfer files to server
-Server:
+## Server:
 1.when server closed, all client will exit
 2.using linked list to store userinfo
 
-Usage
-client:
+# Usage
+## client:
 1.How to run
 ./TCPClient <ip> <port>
 2.private-chat
+: <ID> <meassage>
+3.transfer files to server
+ + filename
+
+## server:
+./TCPServer <ip> <port>
+
+# Example
+## client:
+1.How to run
+./TCPClient 127.0.0.1 50002
+2.private-chat
 : 1 hello,1
+3.transfer files to server
++ ncurses.tar.gz
 
-server:
-./TCPClient <ip> <port>
+## server:
+```sh
+./TCPServer 127.0.0.1 50002
+...
 
-Example
-client:
-./TCPClient 127.0.0.1 50002
-server:
-./TCPClient 127.0.0.1 50002
+# Generator
+using QT to build the project,you can go to directory "TcpMultipleChat/.../build-TCPServer-Desktop-Debug" to make to generate TCPServer and TCPClient.
 
-
-Generator
-
-
-
+# notice
 有以下不规范做法，属于是个人练手项目，所以没有太多时间精力去追求细节，仅仅交流思路
 1.服务器接收文件应该新建端口进行接收,或者标记消息流,把消息流和文件流分开。
 2.在服务器的文件接收应该建立线程，并且进行连续接收的，但为了实验断点续传方法，所以用了函数封装+标志位识别的方法来写来接收文件。
