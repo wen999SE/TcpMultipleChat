@@ -19,34 +19,53 @@ Multi person chat and file transfer based on TCP protocol
 # Usage
 ## client:
 1.How to run
-./TCPClient <ip> <port>
+```sh
+$ ./TCPClient <ip> <port>
+```
 2.private-chat
-: <ID> <meassage>
+ ```sh
+$ : <ID> <message>
+ ```
 3.transfer files to server
- + filename
+ ```sh
+ $ + filename
+ ```
 
 ## server:
+```sh
 ./TCPServer <ip> <port>
+```
 
 # Example
 ## client:
 1.How to run
+```sh
 ./TCPClient 127.0.0.1 50002
+```
 2.private-chat
+```sh
 : 1 hello,1
-3.transfer files to server
 + ncurses.tar.gz
+```
+3.transfer files to server
+```sh
++ ncurses.tar.gz
+```
 
 ## server:
 ```sh
 ./TCPServer 127.0.0.1 50002
-...
+```
 
 # Generator
-using QT to build the project,you can go to directory "TcpMultipleChat/.../build-TCPServer-Desktop-Debug" to make to generate TCPServer and TCPClient.
+Using QT to build the project,you can go to directory "TcpMultipleChat/.../build-TCPServer-Desktop-Debug" to make to generate TCPServer and TCPClient.
 
-# notice
-有以下不规范做法，属于是个人练手项目，所以没有太多时间精力去追求细节，仅仅交流思路
-1.服务器接收文件应该新建端口进行接收,或者标记消息流,把消息流和文件流分开。
-2.在服务器的文件接收应该建立线程，并且进行连续接收的，但为了实验断点续传方法，所以用了函数封装+标志位识别的方法来写来接收文件。
-3.由于上传文件功能是计划外加入的，所以加入该功能后整体代码可读性下降了很多，推荐了解多人聊天功能的话看，v1.1源码
+# License
+
+[MIT](LICENSE) © Richard Littauer
+
+# Notice
+There are the following non-standard practices，whicht is a personal practice，so I don't have too much time and energy to pursue details,just to exchange ideas
+1.The server should create a new port for receiving files,or mark the message stream to separate the message stream from the translate file stream.
+2.In order to test the breakpoint continuation method, I use function encapsulation and flag bit recognition method to recerve files.
+3.Since the upload file function was added unplanned, the overall code readability after the addition of this function decreased a lot.If you want to know the multi-chat func, Just recommended to read the v1.1 source code.
