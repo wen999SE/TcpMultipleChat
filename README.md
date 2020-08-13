@@ -3,8 +3,7 @@
 Multi person chat and file transfer based on TCP protocol
 
 
-[![show](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
-
+[![show](https://github.com/wen99se/TcpMultipleChat/blob/master/readme_img/show.png)]
 
 # Feature
 ## Client:
@@ -33,28 +32,27 @@ $ : <ID> <message>
 
 ## server:
 ```sh
-./TCPServer <ip> <port>
+$ ./TCPServer <ip> <port>
 ```
 
 # Example
 ## client:
 1.How to run
 ```sh
-./TCPClient 127.0.0.1 50002
+$ ./TCPClient 127.0.0.1 50002
 ```
 2.private-chat
 ```sh
-: 1 hello,1
-+ ncurses.tar.gz
+$ : 1 hello,1
 ```
 3.transfer files to server
 ```sh
-+ ncurses.tar.gz
+$ + ncurses.tar.gz
 ```
 
 ## server:
 ```sh
-./TCPServer 127.0.0.1 50002
+$ ./TCPServer 127.0.0.1 50002
 ```
 
 # Generator
